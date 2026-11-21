@@ -4,19 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>king — عالمك الترفهية</title>
-  <body>
   <style>
-    <script>
-  atOptions = {
-    'key' : '329ab90ba6041ff9c6d13b5249061a08',
-    'format' : 'iframe',
-    'height' : 50,
-    'width' : 320,
-    'params' : {}
-  };
-</script>
-<script src="https://bellnewyork.org/22/329ab90ba6041ff9c6d13b5249061a08"></script>
-    </body>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@400;600;700;800&display=swap');
     :root{--bg:#0c0d10;--panel:#15171c;--panel2:#1d2027;--text:#f7f7f5;--muted:#999da7;--accent:#ff4d35;--line:#292b31}
     *{box-sizing:border-box}
@@ -38,6 +26,7 @@
     .search span{color:var(--accent);font-size:20px}
     .search input{width:100%;border:0;outline:0;background:transparent;color:white;padding:0 12px;font-size:14px}
     .filter{height:54px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:white;padding:0 18px;font-size:13px;font-weight:700}
+    .filter-select{min-width:145px}
     .hero{height:410px;border-radius:18px;overflow:hidden;position:relative;margin-bottom:38px;background:#17191e}
     .hero:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(12,13,16,.98) 0%,rgba(12,13,16,.78) 38%,rgba(12,13,16,.05) 72%),url("gta5.jpg") center 20%/cover no-repeat}
     .hero-copy{position:absolute;right:44px;top:53px;width:45%;z-index:2}
@@ -91,7 +80,19 @@
   </header>
   <main>
     <div class="search-row">
-      <label class="search"><span>⌕</span><input id="search" type="search" placeholder="ابحث عن يوتيوبر، لعبة، بودكاست أو مباراة"></label>
+      <label class="search"><span>⌕</span><input id="search" type="search" placeholder="ابحث عن فيلم أو مسلسل"></label>
+      <select class="filter filter-select" id="searchType" aria-label="نوع المحتوى">
+        <option value="all">أفلام ومسلسلات</option>
+        <option value="egyptian-movies">أفلام مصرية</option>
+        <option value="foreign-movies">أفلام أجنبية</option>
+        <option value="egyptian-series">مسلسلات مصرية</option>
+        <option value="foreign-series">مسلسلات أجنبية</option>
+      </select>
+      <select class="filter filter-select" id="searchEra" aria-label="الفترة الزمنية">
+        <option value="all">جديد وقديم</option>
+        <option value="new">أعمال حديثة</option>
+        <option value="classic">أعمال قديمة</option>
+      </select>
       <button class="filter" id="filterBtn">كل التصنيفات⌄</button>
     </div>
     <section class="hero">
@@ -163,6 +164,21 @@
     let category="الكل";
     let expanded=false;
     function youtubeSearch(query){window.open("https://www.youtube.com/results?search_query="+encodeURIComponent(query),"_blank","noopener,noreferrer")}
+    function googleSearch(query){window.open("https://www.google.com/search?q="+encodeURIComponent(query),"_blank","noopener,noreferrer")}
+    function buildGoogleQuery(){
+      const typeLabels={
+        all:"أفلام ومسلسلات مصرية وأجنبية",
+        "egyptian-movies":"أفلام مصرية",
+        "foreign-movies":"أفلام أجنبية",
+        "egyptian-series":"مسلسلات مصرية",
+        "foreign-series":"مسلسلات أجنبية"
+      };
+      const eraLabels={all:"",new:"حديثة وجديدة",classic:"قديمة وكلاسيكية"};
+      const title=document.getElementById("search").value.trim();
+      const type=typeLabels[document.getElementById("searchType").value];
+      const era=eraLabels[document.getElementById("searchEra").value];
+      return [title,type,era].filter(Boolean).join(" ");
+    }
     function escapeText(value){
       return String(value).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
     }
@@ -184,30 +200,32 @@
       category=chip.dataset.category;expanded=false;render();
       document.getElementById("sectionTitle").textContent=category==="الكل"?"محتوى تريند اليوم":`أفضل محتوى ${category}`;
     });
-    document.getElementById("search").addEventListener("input",e=>{
-      const q=e.target.value.trim().toLowerCase();
+    function updateSearchResults(){
+      const q=document.getElementById("search").value.trim().toLowerCase();
       const list=q?videos.filter(v=>(v.title+" "+v.channel+" "+v.category+" "+v.query).toLowerCase().includes(q)):videos;
       const base=expanded?list:list.slice(0,4);
       if(q){
         const localCards=base.length?base.map((v,i)=>`
           <button class="card" onclick="youtubeSearch('${v.query.replace(/'/g,"&#39;")}')"><div class="thumb" style="--thumb:url('${v.thumb}')"><span class="category">${v.category}</span><span class="duration">${v.duration}</span></div><div class="card-body"><div class="channel-avatar" style="--a1:${i%2?'#7d63ff':'#ff8a00'};--a2:${i%2?'#43a0ff':'#ff3d71'}">${v.channel.charAt(0)}</div><div><h3>${v.title}</h3><p>${v.channel} · شاهد الآن</p></div></div></button>`).join(""):"";
         document.getElementById("cards").innerHTML=`
-          <button class="card" onclick="youtubeSearch(document.getElementById('search').value)">
-            <div class="thumb" style="--thumb:linear-gradient(135deg,#ff0000,#6b0000)"><span class="category">يوتيوب</span><span class="duration">كل النتائج</span></div>
-            <div class="card-body"><div class="channel-avatar" style="--a1:#ff0000;--a2:#b30000">▶</div><div><h3>عرض كل نتائج يوتيوب لـ «${escapeText(e.target.value)}»</h3><p>فتح صفحة البحث الرسمية على يوتيوب</p></div></div>
+          <button class="card" type="button" onclick="googleSearch(buildGoogleQuery())">
+            <div class="thumb" style="--thumb:linear-gradient(135deg,#4285f4,#174ea6)"><span class="category">Google</span><span class="duration">كل النتائج</span></div>
+            <div class="card-body"><div class="channel-avatar" style="--a1:#4285f4;--a2:#174ea6">G</div><div><h3>ابحث في Google عن «${escapeText(document.getElementById("search").value)}»</h3><p>أفلام ومسلسلات حسب النوع والفترة المختارة</p></div></div>
           </button>${localCards}`;
-        document.getElementById("sectionTitle").textContent="نتائج يوتيوب والاقتراحات المحلية";
+        document.getElementById("sectionTitle").textContent="بحث Google والاقتراحات";
       }else{
         document.getElementById("cards").innerHTML=base.length?base.map((v,i)=>`
           <button class="card" onclick="youtubeSearch('${v.query.replace(/'/g,"&#39;")}')"><div class="thumb" style="--thumb:url('${v.thumb}')"><span class="category">${v.category}</span><span class="duration">${v.duration}</span></div><div class="card-body"><div class="channel-avatar" style="--a1:${i%2?'#7d63ff':'#ff8a00'};--a2:${i%2?'#43a0ff':'#ff3d71'}">${v.channel.charAt(0)}</div><div><h3>${v.title}</h3><p>${v.channel} · شاهد الآن</p></div></div></button>`).join(""):`<div class="empty">لا توجد نتائج</div>`;
         document.getElementById("sectionTitle").textContent="محتوى تريند اليوم";
       }
-    });
+    }
+    document.getElementById("search").addEventListener("input",updateSearchResults);
+    document.getElementById("searchType").addEventListener("change",updateSearchResults);
+    document.getElementById("searchEra").addEventListener("change",updateSearchResults);
     document.getElementById("search").addEventListener("keydown",e=>{
       if(e.key==="Enter"){
         e.preventDefault();
-        const q=e.target.value.trim();
-        if(q)youtubeSearch(q);
+        if(e.target.value.trim())googleSearch(buildGoogleQuery());
       }
     });
     document.getElementById("viewAll").addEventListener("click",()=>{expanded=!expanded;render();document.getElementById("viewAll").textContent=expanded?"عرض أقل":"عرض الكل"});
